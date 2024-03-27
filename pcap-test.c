@@ -3,14 +3,20 @@
 #include <stdio.h>
 
 typedef struct {
-	u_int8_t  ether_dhost[6];
-	u_int8_t  ether_shost[6];
-	u_int16_t ether_type;  
+	u_int8_t  ether_dhost[6];/* destination ethernet address */
+    u_int8_t  ether_shost[6];/* source ethernet address */
+    u_int16_t ether_type;                 /* protocol */ 
 } libnet_ethernet_hdr;
 
 typedef struct {
-    u_int8_t ip_hl:4,       /* version */
-           ip_v:4;        /* header length */
+#if (LIBNET_LIL_ENDIAN)
+    u_int8_t ip_hl:4,      /* header length */
+           ip_v:4;         /* version */
+#endif
+#if (LIBNET_BIG_ENDIAN)
+    u_int8_t ip_v:4,       /* version */
+           ip_hl:4;        /* header length */
+#endif
     u_int8_t ip_tos;       /* type of service */
 #ifndef IPTOS_LOWDELAY
 #define IPTOS_LOWDELAY      0x10
@@ -43,7 +49,7 @@ typedef struct {
     u_int8_t ip_p;            /* protocol */
     u_int16_t ip_sum;         /* checksum */
     u_int8_t ip_src[4];
-    u_int8_t ip_dst[4]; /* source and dest address */
+    u_int8_t ip_dst[4];         /* source and dest address */
 } libnet_ipv4_hdr;
 
 typedef struct {
@@ -51,12 +57,43 @@ typedef struct {
     u_int16_t th_dport;       /* destination port */
     u_int32_t th_seq;          /* sequence number */
     u_int32_t th_ack;          /* acknowledgement number */
-    u_int8_t off;
+#if (LIBNET_LIL_ENDIAN)
+    u_int8_t th_x2:4,         /* (unused) */
+           th_off:4;        /* data offset */
+#endif
+#if (LIBNET_BIG_ENDIAN)
+    u_int8_t th_off:4,        /* data offset */
+           th_x2:4;         /* (unused) */
+#endif
     u_int8_t  th_flags;       /* control flags */
+#ifndef TH_FIN
+#define TH_FIN    0x01      /* finished send data */
+#endif
+#ifndef TH_SYN
+#define TH_SYN    0x02      /* synchronize sequence numbers */
+#endif
+#ifndef TH_RST
+#define TH_RST    0x04      /* reset the connection */
+#endif
+#ifndef TH_PUSH
+#define TH_PUSH   0x08      /* push data to the app layer */
+#endif
+#ifndef TH_ACK
+#define TH_ACK    0x10      /* acknowledge */
+#endif
+#ifndef TH_URG
+#define TH_URG    0x20      /* urgent! */
+#endif
+#ifndef TH_ECE
+#define TH_ECE    0x40
+#endif
+#ifndef TH_CWR   
+#define TH_CWR    0x80
+#endif
     u_int16_t th_win;         /* window */
     u_int16_t th_sum;         /* checksum */
     u_int16_t th_urp;         /* urgent pointer */
-} libnet_tcp_hdr;
+}libnet_tcp_hdr;
 
 
 void usage() {
